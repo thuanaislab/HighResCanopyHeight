@@ -31,6 +31,10 @@ norm_path = 'saved_checkpoints/aerial_normalization_quantiles_predictor.ckpt'
 ckpt = torch.load(norm_path, map_location='cpu')
 state_dict = ckpt['state_dict']
 checkpoint = 'saved_checkpoints/compressed_SSLhuge.pth'
+PATH = 'highResMeta/crop'
+OUTPUT_PATH = 'highResMeta/output'
+if not os.path.exists(OUTPUT_PATH):
+    os.makedirs(OUTPUT_PATH)
 
 # 1- load normnet
 for k in list(state_dict.keys()):
@@ -63,9 +67,10 @@ class TreeDataset(torch.utils.data.Dataset):
         img_path = os.path.join(self.dataset_path, '/')
         #target_path = os.path.join(self.dataset_path, 'target/')
         input = TF.to_tensor(Image.open(self.dataset_path + '/' + self.datapoints[idx]))
+        name = self.datapoints[idx]
         if self.transform is not None:
             input = self.transform(input)
-        return input
+        return input, name
 
     def __len__(self):
         return len(self.datapoints)
@@ -74,11 +79,11 @@ class TreeDataset(torch.utils.data.Dataset):
 
 data = TreeDataset(dataset_path = PATH, transform = None)
 dataloader = torch.utils.data.DataLoader(data, batch_size=1, shuffle=False, num_workers=0)
-for batch in tqdm(dataloader):
+for batch, name in tqdm(dataloader):
     batch.to(device)
     pred = model(norm(batch))
     fig, axs = plt.subplots(1, 2, figsize = (10, 5))
     sns.heatmap(pred.detach().numpy().squeeze(), ax = axs[0], cbar = False)
     img = batch.detach().numpy().squeeze()
     isns.imgplot(np.moveaxis(img, 0, -1), ax = axs[1])
-    plt.show()
+    plt.savefig(OUTPUT_PATH + '/' + name[0])

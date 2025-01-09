@@ -2,3 +2,5 @@ pytorch_lightning
 pandas
 matplotlib
 torchmetrics==0.11.4
+seaborn_image
+seaborn
