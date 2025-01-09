@@ -65,8 +65,9 @@ class TreeDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         img_path = os.path.join(self.dataset_path, '/')
-        #target_path = os.path.join(self.dataset_path, 'target/')
-        input = TF.to_tensor(Image.open(self.dataset_path + '/' + self.datapoints[idx]))
+        # Convert image to RGB mode before converting to tensor
+        input = Image.open(self.dataset_path + '/' + self.datapoints[idx]).convert('RGB')
+        input = TF.to_tensor(input)
         name = self.datapoints[idx]
         if self.transform is not None:
             input = self.transform(input)
