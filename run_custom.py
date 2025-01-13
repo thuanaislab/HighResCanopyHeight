@@ -43,6 +43,7 @@ for k in list(state_dict.keys()):
         state_dict[new_k] = state_dict.pop(k)
         
 model_norm = inference.RNet(n_classes=6)
+model_norm = model_norm.to(device)
 model_norm = model_norm.eval()
 model_norm.load_state_dict(state_dict)
 
@@ -83,8 +84,11 @@ dataloader = torch.utils.data.DataLoader(data, batch_size=1, shuffle=False, num_
 for batch, name in tqdm(dataloader):
     batch.to(device)
     pred = model(norm(batch))
+    pred = pred.detach().numpy().squeeze()
+    # save the prediction as numpy array
+    np.save(OUTPUT_PATH + '/' + name[0].replace('.png', '.npy'), pred)
     fig, axs = plt.subplots(1, 2, figsize = (10, 5))
-    sns.heatmap(pred.detach().numpy().squeeze(), ax = axs[0], cbar = False)
+    sns.heatmap(pred, ax = axs[0], cbar = True)
     img = batch.detach().numpy().squeeze()
     isns.imgplot(np.moveaxis(img, 0, -1), ax = axs[1])
     plt.savefig(OUTPUT_PATH + '/' + name[0])
